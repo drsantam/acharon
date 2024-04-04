@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "This is the analysis of the initial ACHARON survey."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "ACHARON Survey Results 2024",
@@ -47,12 +54,5 @@
     "title": "ACHARON Survey Results 2024",
     "section": "Working in Cancer Center",
     "text": "Working in Cancer Center\n\n\n\n\n\n\nEMR Access\n\n\n\n\n\n\n\nCan patients communicate with provider in provider’s language where provider is fluent\n\n\n\n\n\n\n\nPerception of Patient Literacy\n\n\n\n\n\n\n\nPerception of ability to fill QoL"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "This is the analysis of the initial ACHARON survey."
   }
 ]
