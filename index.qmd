@@ -13,9 +13,6 @@ source("data_import.R")
 responses <- read_csv("data.csv")
 ```
 
-```{r}
-
-```
 
 ```{r}
 responses %>% 
@@ -154,6 +151,35 @@ df %>%
 ```
 
 The median score for this scale was `r median(df$attitude_care_experience)`. Of the participants `r df %>% filter(attitude_care_experience>0) %>% nrow()` had a positive score and `r df %>% filter(attitude_care_experience<0) %>% nrow()` had a negative score.
+
+## Visualization of score
+
+```{r}
+df %>% 
+  select(id,attitude_prom_integration,attitude_pt_need_identification,attitude_managing_patient_issues,attitude_care_experience) %>% 
+  pivot_longer(cols=-c(id)) %>% 
+  mutate(name = str_remove_all(name,"attitude")) %>% 
+  mutate(name = str_replace_all(name,"\\_"," ")) %>% 
+  mutate(name = str_to_upper(name)) %>% 
+  ggplot(.,aes(x=name,y=value))+
+  geom_boxplot(fill="#274e13")+
+  geom_point(
+    color="black",
+    fill="white",
+    size = 3,
+    pch=21,
+    alpha = 0.7,
+    position=position_jitter(seed=1,width=0.2)
+  )+
+  labs(title = "Distribution of ACHARON scale scores",
+       x="Scale",
+       y="Score")+
+  scale_y_continuous(limits=c(-9,9),
+                     breaks=seq(-9,9,by=1))+
+  geom_hline(yintercept=0)+
+  theme_bw()
+```
+
 
 ## Overall attitude
 
