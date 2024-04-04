@@ -1,0 +1,299 @@
+---
+title: "ACHARON Survey Results 2024"
+execute: 
+  echo: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(gtsummary)
+library(sjlabelled)
+source("data_import.R")
+responses <- read_csv("data.csv")
+```
+
+```{r}
+
+```
+
+```{r}
+responses %>% 
+  mutate(yrs_experience = 2024-experience) %>% 
+  mutate(language_proficiency_level=case_when(
+    str_detect(nativelanguage,"Native proficiency") ~ "Native",
+    str_detect(nativelanguage,"Full professional") ~ "Full Professional",
+    str_detect(nativelanguage,"Professional working") ~"Professional Working", 
+    str_detect(nativelanguage,"Limited working") ~ "Limited Working",
+    str_detect(nativelanguage,"Elementary proficiency") ~ "Elementary Proficiency",
+    str_detect(nativelanguage,"No proficiency") ~ "No Proficiency"
+  )) %>% 
+  rename(
+    ACP1 = attitude1.ACP1.,
+    ACP2 = attitude1.ACP2.,
+    ACE1 = attitude1.ACE1.,
+    APN1 = attitude2.APN1.,
+    APN2 = attitude2.APN2.,
+    ACE2 = attitude2.ACE2.,
+    ACE3 = attitude3.ACE3.,
+    API1 = attitude3.API1.,
+    API2 = attitude4.API2.,
+    ACP3 = attitude4.ACP3.,
+    APN3 = attitude4.APN3.,
+    API3 = attitude4.API3.
+  ) %>% 
+  select(id,age:fillqol,yrs_experience,language_proficiency_level,ACP1,ACP2,ACP3,ACE1,ACE2,ACE3,APN1,APN2,APN3,API1,API2,API3) %>% 
+  mutate(total_acharon_score=rowSums(across(ACP1:API3))) %>% 
+  mutate(attitude_prom_integration = rowSums(across(c(ACP1,ACP2,ACP3)))) %>% 
+  mutate(attitude_pt_need_identification = rowSums(across(c(APN1,APN2,APN3)))) %>% 
+  mutate(attitude_managing_patient_issues = rowSums(across(c(API1,API2,API3)))) %>% 
+  mutate(attitude_care_experience = rowSums(across(c(ACE1,ACE2,ACE3)))) -> df
+```
+
+For this we received a total of `r df %>% nrow()` complete responses for this survey. Survey started at 29th March 2024. Responses were allowed up until 5th April 2024 8:00 AM Indian Standard Time.
+
+```{r}
+df %>% 
+  select(age,gender,yrs_experience,language_proficiency_level,translator,dedicatedcentre,emr,workdays.OPD.,workdays.IPD.,workdays.OT.,workdays.RC.,patients) %>% 
+  var_labels(
+    age = "Age in Years",
+    gender = "Gender",
+    yrs_experience = "Years of experience after PG",
+    dedicatedcentre = "Working in Dedicated Cancer Center",
+    emr = "Working EMR System",
+    language_proficiency_level = "Language Proficiency Level",
+    translator = "Translator required during patient encounter",
+    workdays.IPD. = "Workdays spent in IPD",
+    workdays.RC. = "Workdays spent in Review Clinic",
+    workdays.OPD. = "Workdays spent in OPD",
+    workdays.OT. = "Workdays spent in OT",
+    patients = "Number of patients seen in OP in average"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Participant Profile")
+```
+
+In the following table we will review the participants' responses about the patients educational profile and perceived ability to complete QoL
+
+```{r}
+df %>% 
+  select(patientfluency,patientliteracy,fillqol) %>% 
+  var_labels(
+    patientfluency = "Can Majority of patients communicate in providers language",
+    patientliteracy = "Percent of patients who are literate",
+    fillqol = "Percent of patients who can fill a QoL questionnaire"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Provider Perception of Patient they see")
+```
+
+In the following section we review the attitudes of the providers towards routine collection of PROMs. The ACHARON survey was designed to evaluate providers' attitudes in four distinct domains: 1. Attitudes towards the integration of PROM in clinical practice 2. Attitudes towards the identification of patient needs 3. Attitudes towards managing and addressing patient issues 4. Attitudes towards the impact on care experience
+
+We will first see the ratings provided for each of the question
+
+## Integration of PROM in clinical practice
+
+```{r}
+df %>% 
+  select(ACP1:ACP3) %>% 
+  var_labels(
+    ACP1 = "Change in Workload",
+    ACP2 = "Patient Compliance",
+    ACP3 = "Impact on Shared Decision Making"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Attitudes towards integration of PROM in clinical practice")
+```
+
+The median score for this scale was `r median(df$attitude_prom_integration)`. Of the participants `r df %>% filter(attitude_prom_integration>0) %>% nrow()` had a positive score and `r df %>% filter(attitude_prom_integration<0) %>% nrow()` had a negative score.
+
+## Identification of patient needs
+
+```{r}
+df %>% 
+  select(APN1:APN3) %>% 
+  var_labels(
+    APN1 = "Understanding of Patient Issues",
+    APN2 = "Focus on Patient well being",
+    APN3 = "Individualize Treatment"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Attitudes towards utility of PROMs in identifying patient needs")
+```
+
+The median score for this scale was `r median(df$attitude_pt_need_identification)`. Of the participants `r df %>% filter(attitude_pt_need_identification>0) %>% nrow()` had a positive score and `r df %>% filter(attitude_pt_need_identification<0) %>% nrow()` had a negative score.
+
+## Attitudes towards managing and addressing patient issues
+
+```{r}
+df %>% 
+  select(API1:API3) %>% 
+  var_labels(
+    API1 = "Impact on expectations",
+    API2 = "Burden in healthcare workers",
+    API3 = "Identification of addressable issues"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Attitudes towards utility of PROMs in managing & addressing patient issues")
+```
+
+The median score for this scale was `r median(df$attitude_managing_patient_issues)`. Of the participants `r df %>% filter(attitude_managing_patient_issues>0) %>% nrow()` had a positive score and `r df %>% filter(attitude_managing_patient_issues<0) %>% nrow()` had a negative score.
+
+## Attitudes towards impact on care experience
+
+```{r}
+df %>% 
+  select(ACE1:ACE3) %>% 
+  var_labels(
+    ACE1 = "Impact on expectations",
+    ACE2 = "Burden on healthcare workers",
+    ACE3 = "Identification of addressable issues"
+  ) %>% 
+  tbl_summary() %>% 
+  modify_caption("Attitudes towards impact of PROMS on care experience")
+```
+
+The median score for this scale was `r median(df$attitude_care_experience)`. Of the participants `r df %>% filter(attitude_care_experience>0) %>% nrow()` had a positive score and `r df %>% filter(attitude_care_experience<0) %>% nrow()` had a negative score.
+
+## Overall attitude
+
+The median ACHARON score for the participants was `r median(df$total_acharon_score)`.
+
+The following plot demonstrates the overall attitude score distribution
+
+### Gender wise distribution
+
+```{r}
+df %>% 
+  ggplot(.,aes(y=total_acharon_score,x=gender)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by Gender",
+       x = "Gender",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Age wise distribution
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=age)) +
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(title = "ACHARON Score by Age",
+       x = "Age",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Years of experience
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=yrs_experience)) +
+  geom_point()+
+  geom_smooth(method="lm")+
+  labs(title = "ACHARON Score by Experience",
+       x = "Experience in Years",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Fluency with native language
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=language_proficiency_level)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by Language Proficiency",
+       x = "Language Proficiency Level",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Translator Need
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=translator)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by Translator Need",
+       x = "Translator Needed",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Patient load in OPD
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=patients)) +
+  geom_point()+
+  stat_smooth(method="lm")+
+  labs(title = "ACHARON Score by Number of OPD Patients",
+       x = "Number of OPD Patients Seen",
+       y = "Total ACHARON Score"
+       )
+```
+
+## Working in Cancer Center
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=dedicatedcentre)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by Workplace",
+       x = "Dedicated Cancer Center",
+       y = "Total ACHARON Score"
+       )
+```
+
+### EMR Access
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=emr)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by Access to EMR",
+       x = "Access to EMR",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Can patients communicate with provider in provider's language where provider is fluent
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=patientfluency)) +
+  geom_boxplot()+
+  labs(title = "ACHARON Score by provider's language",
+       x = "Majority Patients can communicate",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Perception of Patient Literacy
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=patientliteracy)) +
+  geom_point()+
+  stat_smooth(method="lm")+
+  labs(title = "ACHARON Score by Preceived Patient Literacy Level",
+       x = "% of Patients who are Literate",
+       y = "Total ACHARON Score"
+       )
+```
+
+### Perception of ability to fill QoL
+
+```{r}
+df %>% 
+  ggplot(aes(y=total_acharon_score,x=fillqol)) +
+  geom_point()+
+  stat_smooth(method="lm")+
+  labs(title = "ACHARON Score by Preceived Ability to Fill QoL Unassisted",
+       x = "% of Patients who can complete QoL",
+       y = "Total ACHARON Score"
+       )
+```
